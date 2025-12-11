@@ -5,9 +5,11 @@
         <div class="panel panel-hovered mb20 panel-primary">
             <div class="panel-heading">
                 <div class="btn-group pull-right">
+					<a href="{$_url}plugin/radon_users" style="margin-right: 5px;"
+                        class="btn btn-info btn-xs">{Lang::T('Refresh')}</a>
                     <a href="{$_url}plugin/radon_users_cleandb" style="margin: 0px;"
                         onclick="return confirm('{Lang::T('Are you Sure you want to Clean this Database Table?')}')"
-                        class="btn btn-danger btn-xs">{Lang::T('Clear Table')}</a>
+                        class="btn btn-danger btn-xs">{Lang::T('Clean Up')}</a>
                 </div>Online User : {$totalCount}
             </div>
             <div class="panel-body">
@@ -15,7 +17,7 @@
                     <table id="onlineTable" class="table table-striped table-bordered table-hover">
                         <thead>
                             <tr>
-                                <th>{Lang::T('Number')}</th>
+								<th>{Lang::T('Full Name')}</th>
                                 <th>{Lang::T('Username')}</th>
                                 <th>{Lang::T('NAS')}</th>
                                 <th>{Lang::T('Type')}</th>
@@ -28,12 +30,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {$no = 1}
                             {foreach $useron as $userson}
                             <tr>
-                                <td>{$no++}</td>
-                                <td><a href="{$_url}customers/viewu/{$userson['username']}">{$userson['username']}</a>
-                                </td>
+								<td>{if isset($customerFullNames[$userson['username']])}{$customerFullNames[$userson['username']]}{else}N/A{/if}</td>
+                                <td><a href="{$_url}customers/viewu/{$userson['username']}">{$userson['username']}</a></td>
                                 <td>{$userson['nasipaddress']}</td>
                                 <td>{$userson['calledstationid']}</td>
                                 <td>{$userson['framedipaddress']}</td>
