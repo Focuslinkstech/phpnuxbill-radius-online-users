@@ -14,85 +14,6 @@ function radon_users()
 	$error = [];
 	$success = [];
 
-	// Helper function to send disconnect packets to NAS for a username
-	function radon_send_disconnect_packets($username, $coaport = 3799) {
-		// Gather active sessions first (before marking them stopped)
-		$activeSessions = ORM::for_table('radacct')
-			->select('nasipaddress')
-			->select('acctsessionid')
-			->where('username', $username)
-			->where_raw('acctstoptime IS NULL')
-			->find_many();
-
-		$packetsSent = 0;
-		$packetsFailed = 0;
-
-		// Send Disconnect-Request to each NAS involved
-		foreach ($activeSessions as $session) {
-			$targetIp = isset($session['nasipaddress']) ? $session['nasipaddress'] : '';
-			$acctSessionId = isset($session['acctsessionid']) ? $session['acctsessionid'] : '';
-			$secret = null;
-
-			if (!empty($targetIp)) {
-				// Try exact NAS entry first
-				$nasEntry = ORM::for_table('nas')
-					->select('nasname')
-					->select('secret')
-					->where('nasname', $targetIp)
-					->find_one();
-
-				if ($nasEntry) {
-					$secret = isset($nasEntry['secret']) ? $nasEntry['secret'] : null;
-				} else {
-					// Fallback to wildcard NAS (0.0.0.0/0) if configured
-					$wild = ORM::for_table('nas')
-						->select('secret')
-						->where('nasname', '0.0.0.0/0')
-						->find_one();
-					if ($wild) {
-						$secret = isset($wild['secret']) ? $wild['secret'] : null;
-					}
-				}
-			}
-
-			if (!empty($targetIp) && !empty($secret)) {
-				// Build attributes safely and call radclient with small retry/timeout
-				$format = "User-Name = %s\n";
-				$args = [escapeshellarg($username)];
-				if (!empty($acctSessionId)) {
-					$format .= "Acct-Session-Id = %s\n";
-					$args[] = escapeshellarg($acctSessionId);
-				}
-
-				$cmd = "printf " . escapeshellarg($format);
-				foreach ($args as $a) {
-					$cmd .= " " . $a;
-				}
-				$cmd .= " | radclient -r 1 -t 2 " . escapeshellarg($targetIp . ':' . $coaport) . " disconnect " . escapeshellarg($secret) . " 2>&1";
-
-				$output = [];
-				$retcode = 0;
-				exec($cmd, $output, $retcode);
-
-				if ($retcode !== 0) {
-					$packetsFailed++;
-					_log("Disconnect packet failed for $username on $targetIp. Output: " . implode("\n", $output));
-					if (function_exists('sendTelegram')) {
-						sendTelegram("Disconnect packet failed for $username on $targetIp. Output: " . implode("\n", $output));
-					}
-				} else {
-					$packetsSent++;
-					_log("Disconnect packet sent for $username on $targetIp (session: $acctSessionId)");
-				}
-			} else {
-				// No NAS target or secret available; skip sending DM
-				_log("No NAS/secret for $username session on $targetIp; skipping disconnect packet");
-			}
-		}
-
-		return ['sent' => $packetsSent, 'failed' => $packetsFailed];
-	}
-
 	// Handle AJAX disconnection request
 	if (isset($_POST['ajax_disconnect'])) {
 		header('Content-Type: application/json');
@@ -335,6 +256,84 @@ function radon_users()
 	$ui->display('radon.tpl');
 }
 
+// Helper function to send disconnect packets to NAS for a username
+function radon_send_disconnect_packets($username, $coaport = 3799) {
+	// Gather active sessions first (before marking them stopped)
+	$activeSessions = ORM::for_table('radacct')
+		->select('nasipaddress')
+		->select('acctsessionid')
+		->where('username', $username)
+		->where_raw('acctstoptime IS NULL')
+		->find_many();
+
+	$packetsSent = 0;
+	$packetsFailed = 0;
+
+	// Send Disconnect-Request to each NAS involved
+	foreach ($activeSessions as $session) {
+		$targetIp = isset($session['nasipaddress']) ? $session['nasipaddress'] : '';
+		$acctSessionId = isset($session['acctsessionid']) ? $session['acctsessionid'] : '';
+		$secret = null;
+
+		if (!empty($targetIp)) {
+			// Try exact NAS entry first
+			$nasEntry = ORM::for_table('nas')
+				->select('nasname')
+				->select('secret')
+				->where('nasname', $targetIp)
+				->find_one();
+
+			if ($nasEntry) {
+				$secret = isset($nasEntry['secret']) ? $nasEntry['secret'] : null;
+			} else {
+				// Fallback to wildcard NAS (0.0.0.0/0) if configured
+				$wild = ORM::for_table('nas')
+					->select('secret')
+					->where('nasname', '0.0.0.0/0')
+					->find_one();
+				if ($wild) {
+					$secret = isset($wild['secret']) ? $wild['secret'] : null;
+				}
+			}
+		}
+
+		if (!empty($targetIp) && !empty($secret)) {
+			// Build attributes safely and call radclient with small retry/timeout
+			$format = "User-Name = %s\n";
+			$args = [escapeshellarg($username)];
+			if (!empty($acctSessionId)) {
+				$format .= "Acct-Session-Id = %s\n";
+				$args[] = escapeshellarg($acctSessionId);
+			}
+
+			$cmd = "printf " . escapeshellarg($format);
+			foreach ($args as $a) {
+				$cmd .= " " . $a;
+			}
+			$cmd .= " | radclient -r 1 -t 2 " . escapeshellarg($targetIp . ':' . $coaport) . " disconnect " . escapeshellarg($secret) . " 2>&1";
+
+			$output = [];
+			$retcode = 0;
+			exec($cmd, $output, $retcode);
+
+			if ($retcode !== 0) {
+				$packetsFailed++;
+				_log("Disconnect packet failed for $username on $targetIp. Output: " . implode("\n", $output));
+				if (function_exists('sendTelegram')) {
+					sendTelegram("Disconnect packet failed for $username on $targetIp. Output: " . implode("\n", $output));
+				}
+			} else {
+				$packetsSent++;
+				_log("Disconnect packet sent for $username on $targetIp (session: $acctSessionId)");
+			}
+		} else {
+			// No NAS target or secret available; skip sending DM
+			_log("No NAS/secret for $username session on $targetIp; skipping disconnect packet");
+		}
+	}
+
+	return ['sent' => $packetsSent, 'failed' => $packetsFailed];
+}
 
 // Function to format bytes into KB, MB, GB or TB
 function radon_formatBytes($bytes, $precision = 2)
