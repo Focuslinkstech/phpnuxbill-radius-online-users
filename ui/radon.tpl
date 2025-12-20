@@ -117,6 +117,13 @@
             <div class="panel-heading">
                 <h3 class="panel-title"><span class="glyphicon glyphicon-list"></span> {Lang::T('Online Users')}
                     ({$totalCount})</h3>
+                <div class="btn-group pull-right">
+					<a href="{$_url}plugin/radon_users" style="margin-right: 5px;"
+                        class="btn btn-info btn-xs">{Lang::T('Refresh')}</a>
+                    <a href="{$_url}plugin/radon_users_cleandb" style="margin: 0px;"
+                        onclick="return confirm('{Lang::T('Are you Sure you want to Clean this Database Table?')}')"
+                        class="btn btn-danger btn-xs">{Lang::T('Clean Up')}</a>
+                </div>Online User : {$totalCount}
             </div>
             <div class="panel-body">
                 <!-- Mass Action Toolbar -->
@@ -144,6 +151,7 @@
                                     <input type="checkbox" id="selectAll" title="{Lang::T('Select All')}">
                                 </th>
                                 <th>{Lang::T('Number')}</th>
+								<th>{Lang::T('Full Name')}</th>
                                 <th>{Lang::T('Username')}</th>
                                 <th>{Lang::T('NAS')}</th>
                                 <th>{Lang::T('Type')}</th>
@@ -158,7 +166,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {$no = 1}
                             {foreach $useron as $userson}
                             {$userTotalUsage = $userson['acctinputoctets'] + $userson['acctoutputoctets']}
                             <tr>
@@ -170,6 +177,8 @@
                                 <td><a href="{$_url}customers/viewu/{$userson['username']}"
                                         class="text-primary"><strong>{$userson['username']}</strong></a>
                                 </td>
+								<td>{if isset($customerFullNames[$userson['username']])}{$customerFullNames[$userson['username']]}{else}N/A{/if}</td>
+                                <td><a href="{$_url}customers/viewu/{$userson['username']}">{$userson['username']}</a></td>
                                 <td>{$userson['nasipaddress']}</td>
                                 <td><span class="label label-info">{$userson['calledstationid']}</span></td>
                                 <td><code>{$userson['framedipaddress']}</code></td>
