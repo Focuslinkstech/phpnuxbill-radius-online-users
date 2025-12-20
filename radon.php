@@ -184,12 +184,23 @@ function radon_users()
 	$totalCount = ORM::for_table('radacct')
 		->where_raw("acctstoptime IS NULL")
 		->count();
-	
+
+	// Calculate total data usage
+	$totalUpload = 0;
+	$totalDownload = 0;
+	$totalUsage = 0;
+	$totalUptime = 0;
 	$onlineUsernames = [];
+
 	foreach ($useron as $user) {
+		$totalUpload += (int)$user['acctinputoctets'];
+		$totalDownload += (int)$user['acctoutputoctets'];
+		$totalUptime += (int)$user['acctsessiontime'];
 		$onlineUsernames[] = $user['username'];
 	}
+	$totalUsage = $totalUpload + $totalDownload;
 	
+	// Get full customer name
 	$customerFullNames = [];
 	if (!empty($onlineUsernames)) {
 		$customers = ORM::for_table('tbl_customers')
@@ -202,19 +213,6 @@ function radon_users()
 			$customerFullNames[$customerRecord['username']] = $customerRecord['fullname'];
 		}
 	}
-
-	// Calculate total data usage
-	$totalUpload = 0;
-	$totalDownload = 0;
-	$totalUsage = 0;
-	$totalUptime = 0;
-
-	foreach ($useron as $user) {
-		$totalUpload += (int)$user['acctinputoctets'];
-		$totalDownload += (int)$user['acctoutputoctets'];
-		$totalUptime += (int)$user['acctsessiontime'];
-	}
-	$totalUsage = $totalUpload + $totalDownload;
 
 	$ui->assign('error', $error);
 	$ui->assign('success', $success);

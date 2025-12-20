@@ -21,28 +21,28 @@
 <!-- Enhanced Dashboard Statistics -->
 <div class="row">
     <div class="col-md-3 col-sm-6">
-        <div class="stats-card success">
+        <div class="stats-card success" style="height: 140px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden;">
             <div class="stats-label">{Lang::T('Total Online Users')}</div>
             <div class="stats-value">{$totalCount}</div>
             <i class="glyphicon glyphicon-user" style="font-size: 24px; opacity: 0.7;"></i>
         </div>
     </div>
     <div class="col-md-3 col-sm-6">
-        <div class="stats-card info">
+        <div class="stats-card info" style="height: 140px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden;">
             <div class="stats-label">{Lang::T('Total Data Usage')}</div>
             <div class="stats-value">{radon_formatBytes($totalUsage)}</div>
             <i class="glyphicon glyphicon-transfer" style="font-size: 24px; opacity: 0.7;"></i>
         </div>
     </div>
     <div class="col-md-3 col-sm-6">
-        <div class="stats-card warning">
+        <div class="stats-card warning" style="height: 140px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden;">
             <div class="stats-label">{Lang::T('Total Upload')}</div>
             <div class="stats-value">{radon_formatBytes($totalUpload)}</div>
             <i class="glyphicon glyphicon-arrow-up" style="font-size: 24px; opacity: 0.7;"></i>
         </div>
     </div>
     <div class="col-md-3 col-sm-6">
-        <div class="stats-card danger">
+        <div class="stats-card danger" style="height: 140px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; position: relative; overflow: hidden;">
             <div class="stats-label">{Lang::T('Total Download')}</div>
             <div class="stats-value">{radon_formatBytes($totalDownload)}</div>
             <i class="glyphicon glyphicon-arrow-down" style="font-size: 24px; opacity: 0.7;"></i>
@@ -79,12 +79,17 @@
 {/if}
 
 <div class="row" style="padding: 5px">
-    <div class="col-lg-3 col-lg-offset-9">
-        <div class="btn-group btn-group-justified" role="group">
+    <div class="col-lg-12">
+        <div class="pull-right">
+            <a href="{$_url}plugin/radon_users" class="btn btn-info btn-sm" style="margin-right: 5px;">
+                <span class="glyphicon glyphicon-refresh"></span> {Lang::T('Refresh')}
+            </a>
             <div class="btn-group" role="group">
                 <button type="button"
-                    class="btn btn-danger btn-block waves-effect modern-danger btn-refresh dropdown-toggle"
-                    data-toggle="dropdown">{Lang::T('Database Management')} <span class="caret"></span></button>
+                    class="btn btn-danger btn-sm waves-effect modern-danger btn-refresh dropdown-toggle"
+                    data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-cog"></span> {Lang::T('Database Management')} <span class="caret"></span>
+                </button>
                 <ul class="dropdown-menu" role="menu">
                     <li><a href="{$_url}plugin/radon_users_cleandb&action=all"
                             onclick="return confirm('{Lang::T('Are you sure you want to TRUNCATE ALL records in the RADACCT table? This action cannot be undone!')}')">
@@ -117,13 +122,6 @@
             <div class="panel-heading">
                 <h3 class="panel-title"><span class="glyphicon glyphicon-list"></span> {Lang::T('Online Users')}
                     ({$totalCount})</h3>
-                <div class="btn-group pull-right">
-					<a href="{$_url}plugin/radon_users" style="margin-right: 5px;"
-                        class="btn btn-info btn-xs">{Lang::T('Refresh')}</a>
-                    <a href="{$_url}plugin/radon_users_cleandb" style="margin: 0px;"
-                        onclick="return confirm('{Lang::T('Are you Sure you want to Clean this Database Table?')}')"
-                        class="btn btn-danger btn-xs">{Lang::T('Clean Up')}</a>
-                </div>Online User : {$totalCount}
             </div>
             <div class="panel-body">
                 <!-- Mass Action Toolbar -->
@@ -150,8 +148,7 @@
                                 <th class="checkbox-column">
                                     <input type="checkbox" id="selectAll" title="{Lang::T('Select All')}">
                                 </th>
-                                <th>{Lang::T('Number')}</th>
-								<th>{Lang::T('Full Name')}</th>
+                                <th>{Lang::T('Full Name')}</th>
                                 <th>{Lang::T('Username')}</th>
                                 <th>{Lang::T('NAS')}</th>
                                 <th>{Lang::T('Type')}</th>
@@ -169,16 +166,14 @@
                             {foreach $useron as $userson}
                             {$userTotalUsage = $userson['acctinputoctets'] + $userson['acctoutputoctets']}
                             <tr>
-                                <td class="checkbox-column">
+                                <td class="checkbox-column" style="text-align: center;">
                                     <input type="checkbox" class="user-checkbox" name="selected_users[]"
                                         value="{$userson['username']}" data-username="{$userson['username']}">
                                 </td>
-                                <td>{$no++}</td>
+                                <td>{if isset($customerFullNames[$userson['username']])}{$customerFullNames[$userson['username']]}{else}N/A{/if}</td>
                                 <td><a href="{$_url}customers/viewu/{$userson['username']}"
                                         class="text-primary"><strong>{$userson['username']}</strong></a>
                                 </td>
-								<td>{if isset($customerFullNames[$userson['username']])}{$customerFullNames[$userson['username']]}{else}N/A{/if}</td>
-                                <td><a href="{$_url}customers/viewu/{$userson['username']}">{$userson['username']}</a></td>
                                 <td>{$userson['nasipaddress']}</td>
                                 <td><span class="label label-info">{$userson['calledstationid']}</span></td>
                                 <td><code>{$userson['framedipaddress']}</code></td>
