@@ -81,9 +81,6 @@
 <div class="row" style="padding: 5px">
     <div class="col-lg-12">
         <div class="pull-right">
-            <a href="{$_url}plugin/radon_users" class="btn btn-info btn-sm" style="margin-right: 5px;">
-                <span class="glyphicon glyphicon-refresh"></span> {Lang::T('Refresh')}
-            </a>
             <div class="btn-group" role="group">
                 <button type="button"
                     class="btn btn-danger btn-sm waves-effect modern-danger btn-refresh dropdown-toggle"
@@ -112,6 +109,9 @@
                     </li>
                 </ul>
             </div>
+            <a href="{$_url}plugin/radon_users" class="btn btn-info btn-sm" style="margin-right: 5px;">
+                <span class="glyphicon glyphicon-refresh"></span> {Lang::T('Refresh')}
+            </a>
         </div>
     </div>
 </div>
